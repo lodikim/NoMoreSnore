@@ -35,6 +35,8 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import com.example.pj4test.StopAlarm
 import com.example.pj4test.ProjectConfiguration
 import java.util.LinkedList
 import java.util.concurrent.ExecutorService
@@ -42,6 +44,8 @@ import java.util.concurrent.Executors
 import com.example.pj4test.cameraInference.PersonClassifier
 import com.example.pj4test.databinding.FragmentCameraBinding
 import org.tensorflow.lite.task.vision.detector.Detection
+
+import com.example.pj4test.fragment.AudioFragment
 
 class CameraFragment : Fragment(), PersonClassifier.DetectorListener {
     private val TAG = "CameraFragment"
@@ -87,6 +91,7 @@ class CameraFragment : Fragment(), PersonClassifier.DetectorListener {
         personClassifier = PersonClassifier()
         personClassifier.initialize(requireContext())
         personClassifier.setDetectorListener(this)
+
 
         // Initialize our background executor
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -186,6 +191,8 @@ class CameraFragment : Fragment(), PersonClassifier.DetectorListener {
         personClassifier.detect(bitmapBuffer, imageRotation)
     }
 
+    private val viewModel: StopAlarm by activityViewModels()
+
     // Update UI after objects have been detected. Extracts original image height/width
     // to scale and place bounding boxes properly through OverlayView
     override fun onObjectDetectionResults(
@@ -204,12 +211,16 @@ class CameraFragment : Fragment(), PersonClassifier.DetectorListener {
             
             // find at least one bounding box of the person
             val isPersonDetected: Boolean = results!!.find { it.categories[0].label == "person" } != null
-            
+
             // change UI according to the result
             if (isPersonDetected) {
+                Log.d(TAG, "Person Detected")
                 personView.text = "PERSON"
                 personView.setBackgroundColor(ProjectConfiguration.activeBackgroundColor)
                 personView.setTextColor(ProjectConfiguration.activeTextColor)
+
+                // Call the function to make the alarm stop ringing
+                viewModel.stopAlarm(true)
             } else {
                 personView.text = "NO PERSON"
                 personView.setBackgroundColor(ProjectConfiguration.idleBackgroundColor)
