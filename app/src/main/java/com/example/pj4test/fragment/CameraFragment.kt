@@ -36,8 +36,10 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import com.example.pj4test.StopAlarm
 import com.example.pj4test.ProjectConfiguration
+import com.example.pj4test.StartCamera
 import java.util.LinkedList
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -92,7 +94,6 @@ class CameraFragment : Fragment(), PersonClassifier.DetectorListener {
         personClassifier.initialize(requireContext())
         personClassifier.setDetectorListener(this)
 
-
         // Initialize our background executor
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -103,6 +104,10 @@ class CameraFragment : Fragment(), PersonClassifier.DetectorListener {
         }
 
         personView = fragmentCameraBinding.PersonView
+
+        viewModel2.startCamera.observe(viewLifecycleOwner, Observer { newBool ->
+            startCameraInference = newBool
+        })
     }
 
     // Initialize CameraX, and prepare to bind the camera use cases
@@ -173,6 +178,10 @@ class CameraFragment : Fragment(), PersonClassifier.DetectorListener {
         imageAnalyzer?.targetRotation = fragmentCameraBinding.viewFinder.display.rotation
     }
 
+    private val viewModel: StopAlarm by activityViewModels()
+    private val viewModel2: StartCamera by activityViewModels()
+    var startCameraInference : Boolean = false
+
     private fun detectObjects(image: ImageProxy) {
         if (!::bitmapBuffer.isInitialized) {
             // The image rotation and RGB image buffer are initialized only once
@@ -188,10 +197,16 @@ class CameraFragment : Fragment(), PersonClassifier.DetectorListener {
         val imageRotation = image.imageInfo.rotationDegrees
 
         // Pass Bitmap and rotation to the object detector helper for processing and detection
-        personClassifier.detect(bitmapBuffer, imageRotation)
-    }
 
-    private val viewModel: StopAlarm by activityViewModels()
+        /*
+        viewModel2.startCamera.observe(viewLifecycleOwner, Observer { newBool ->
+            startCameraInference = newBool
+        })
+        */
+        if (startCameraInference == true) {
+            personClassifier.detect(bitmapBuffer, imageRotation)
+        }
+    }
 
     // Update UI after objects have been detected. Extracts original image height/width
     // to scale and place bounding boxes properly through OverlayView

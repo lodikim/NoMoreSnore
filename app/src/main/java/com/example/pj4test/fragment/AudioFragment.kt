@@ -14,11 +14,13 @@ import com.example.pj4test.databinding.FragmentAudioBinding
 import android.media.MediaPlayer
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.example.pj4test.StopAlarm
 import com.example.pj4test.R
+import com.example.pj4test.StartCamera
 
 class AudioFragment: Fragment(), SnapClassifier.DetectorListener {
     private val TAG = "AudioFragment"
@@ -68,6 +70,7 @@ class AudioFragment: Fragment(), SnapClassifier.DetectorListener {
     var isAlarmRinging: Boolean = false
     //var personDetected: Boolean = false
     private val viewModel: StopAlarm by activityViewModels()
+    private val viewModel2: StartCamera by activityViewModels()
     var personDetected : Boolean = false
 
     override fun onResults(score: Float) {
@@ -81,6 +84,9 @@ class AudioFragment: Fragment(), SnapClassifier.DetectorListener {
                 // Call the function to make the alarm ring
                 makeAlarmRing()
                 viewModel.stopAlarm(false)
+
+                // Call the function to start camera inference
+                viewModel2.startCamera(true)
             } else {
                 snapView.text = "NO SNORING"   /** No snoring Txt*/
                 snapView.setBackgroundColor(ProjectConfiguration.idleBackgroundColor)
@@ -95,6 +101,10 @@ class AudioFragment: Fragment(), SnapClassifier.DetectorListener {
                     isAlarmRinging = false
                     mediaPlayer?.release() // Stop the alarm by releasing the MediaPlayer
                     mediaPlayer = null
+
+                    // If alarm is stopped, we do not any more camera inference,
+                    // until the next snoring is detected.
+                    viewModel2.startCamera(false)
                 }
                 else{
                     Log.d(TAG, "variable personDetected : false")
