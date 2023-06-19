@@ -149,7 +149,9 @@ class SnapClassifier {
     companion object {
         const val TAG = "HornClassifier"
 
-        const val REFRESH_INTERVAL_MS = 33L
+        // Increase REFRESH_INTERVAL_MS by 100-fold
+        //const val REFRESH_INTERVAL_MS = 33L
+        const val REFRESH_INTERVAL_MS = 3300L
         const val YAMNET_MODEL = "yamnet_classification.tflite"
 
         const val THRESHOLD = 0.5f
