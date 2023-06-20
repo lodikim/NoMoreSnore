@@ -105,6 +105,7 @@ class CameraFragment : Fragment(), PersonClassifier.DetectorListener {
 
         personView = fragmentCameraBinding.PersonView
 
+        // set the variable startCameraInference -> this turns on/off the detection
         viewModel2.startCamera.observe(viewLifecycleOwner, Observer { newBool ->
             startCameraInference = newBool
         })
@@ -198,11 +199,14 @@ class CameraFragment : Fragment(), PersonClassifier.DetectorListener {
 
         // Pass Bitmap and rotation to the object detector helper for processing and detection
 
+        // the function 'observe' does not seem to work here
         /*
         viewModel2.startCamera.observe(viewLifecycleOwner, Observer { newBool ->
             startCameraInference = newBool
         })
         */
+
+        // only use the personClassifier when 'startCameraInference' is set to true
         if (startCameraInference == true) {
             personClassifier.detect(bitmapBuffer, imageRotation)
         }
